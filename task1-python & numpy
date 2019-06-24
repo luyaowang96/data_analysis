@@ -1,0 +1,163 @@
+#=============== part1: python/jupyter 常用指令 ===============
+1.%run 命令 //  %load命令
+运行某个写好的文件：%run ipython_script_test.py
+利用此命令后，文件中所有定义的变量(import、函 数和全局变量，除非抛出异常)，都可以在 IPython shell 中随后访问
+在 Jupyter notebook 中，可以使用%load；
+
+2.magic 命令-- %matplotlib inline
+在notebook中直接显示绘制的图形
+
+3.isinstance 
+isinstance可以用类型元组，检查对象的类型是否在元组中:isinstance(a, (int, float))
+
+4.字符串
+对于有换行符的字符串，可以使用三引号，'''或"""都行
+str.count('\n') #计算文本的行数
+
+5.datetime 模块：
+from date time import date time, date, time
+Dt = datetime(2019,10,25,20,12,15)
+Dt.day
+Dt.minute
+Dt.date()
+Dt.time()
+将 datetime 格式化为字符串—strftime：
+dt.strftime('%m/%d/%Y %H:%M')
+将字符串转化为datetime格式—strptime：
+datetime.strptime('20091031', '%Y%m%d')
+字符串内时间的替换：
+dt.replace(minute=0, second=0)
+
+6.pass：
+pass 是 Python 中的非操作语句 ，可作为未执行代码的占位符
+
+7.三元表达式：
+value = true_exp if condition else false_exp
+
+#=============== part2: python 数据结构 ===============
+1.元组 -- 固定长度，不可改变
+-创建方式：tup1 = 4,5,6
+tup2 = (4,5,(7,8,9))
+tup3 = tuple([4,0,2])
+注：可以用加号将元组串联起来；元组乘整数也能达到这个效果
+-拆分：
+values = 1,2,3,4,5,6
+a,b,*rest = values
+-方法：
+a.count(2) #统计某个值出现的频率
+
+2.列表 -- 列表长度和内容可以被修改
+-创建方式： 方括号定义
+-添加和删除元素：append，insert（可以指定位置），pop，remove
+list.insert(1,'rea')
+注：insert计算量大，若需要在序列的头部和尾部插入新元素，则可使用collections.deque
+pop 也可指定位置删除元素 b.pop(2)
+remove 删除第一个符合指定元素的值 a.remove('foo')
+-检查列表元素：in/not in
+由于python是线性搜索列表中的值，所以用in检查速度比集合和字典慢
+-串联： +号链接/extend扩展
+extend扩展后，添加的元素和之前的元素在同一个维度中；
+extend扩展比+法连接列表效率更高
+-排序：sort
+sort不会创建副本，还可以指定排序方法：a.sort(key=len)
+-维护已排序的列表，实现二分搜索和插入值：bisect 模块
+-切片：负数表示从后向前
+-序列函数--enumerate
+for i,value in enumerate(list):
+-序列函数--sorted 返回一个新的排序后的列表
+sorted([9,2,5,1,5,3])
+-序列函数--zip函数 将多个列表、元组或其他序列组成一个**元组**列表
+list(zip(list1,list2,list3))
+zip可以处理任意多个序列，元素个数取决于最短的序列
+可结合enumerate使用
+zip可将行列表转化为列的列表
+-序列函数--reversed函数 从后向前迭代一个序列
+reversed是一个生成器，只有实体化（list或for循环）才能创建序列
+list(reversed(range(10)))
+
+3.字典
+-创建方式：{}/dict
+map = dict(zip(range(5),reversed(range(5))))
+-in 检测键值
+-删除 del/pop
+del 删除指定index的键和值：del dict1[5]
+pop 删除指定value的键和值：dict1.pop('dummy')
+-**默认值** 对pop和get可取默认值进行返回;setdefault 简化建立字典的语句
+value= some_dict.get(key,default_value)
+get默认返回None，若不存在键pop抛出异常
+-setdefault
+for word in words:
+   letter = word[0]
+   dict1.setdefault(letter,[]).append(word)
+
+4.集合 无序不可重复的元素集合
+-创建方式：set/{}
+s1 = set([2,1,2,3,4,1,2])
+s2 = {2,2,2,2,3,3}
+-并、交、差分、对称差的集合运算
+union/| : a.union(b); a | b
+intersection/& : a.intersection(b); a&b
+-增加/删除元素 add, pop, remove
+-操作函数-子集/父集/交集 issubset/issuperset/isdisjoin 返回bool类型
+
+5.列表、集合、字典推导式
+-列表推导式：[expr for val in collection if condition]
+-字典推导式：{key_expr : value_expr for value in collection if condition}
+-集合推导式：{expr for value in collection if condition}
+
+6.匿名函数 lambda
+lambda x : expr
+-使用场景：建立列表；排序指定key；部分参数应用
+
+7.生成器
+创建方式：构建函数时用 yield 而不是  return；（expr for x in range(100)）
+
+8.异常处理
+try:
+   return expr
+except (ValueError):
+   return x
+
+**ex1**
+try:
+   write_to_file(f)
+except:
+   print('failed')
+else:
+   print('success')
+
+finally:
+   f.close()
+#=============== part3: numpy ===============   
+1.numpy数组之间的取值之间的计算是元素级别的计算  
+2.深拷贝&浅拷贝  
+对数组切片赋值时，该值会自动传播；即视图上的修改反射到源数组中  
+arr_slice = arr[3:5]  
+arr_slice[1]=12345;arr也会跟着变化  
+若只是想取数组的副本（不会改变源数组）而非视图，则得用arr[3:5].copy()  
+3.对二维数组的索引方式：arr[0][2]/ arr[0,2]  
+4.元素级数组函数：multiply,divide,power,maximum,minimum,mod,  
+5.np.where -- 高效的三元表达 x if condition else y的矢量化版本
+res = np.where(cond, xarr, yarr)  
+6.用于布尔型数组的方法：any 和 all   
+arr.any()  arr.all()  
+7.数学和统计方法：mean, average, sum, cumsum, cumprod, std, var, argmin, argmax  
+arr.mean(axis=0/1)  
+8. numpy中针对一位数组的基本集合运算  
+unique(x) -- 找出数组中的唯一值并返回排序后的结果  
+intersect1d(x,y) -- 计算公共元素并返回有序结果  
+union1d(x,y) -- 计算并集并返回有序结果  
+in1d(x,y) -- x元素是否包含于y的bool数组
+setdiff1d(x,y) -- 元素在x不在y
+setxor1d(x,y) -- 集合对称差；存在于数组中且不同时存在于两个数组中
+
+9.矩阵乘法：dot，@符
+np.dot(x,y)
+x @ np.ones(3)
+10.np.linalg 线性代数库，包含矩阵分解，求逆，行列式等
+inv,qr,diag,trace,det,eig... p124
+
+11.伪随机数生成
+np.random.normal((m,n)) -- normal
+RandomState -- 非全局随机种子
+random对应函数 p126

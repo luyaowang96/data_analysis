@@ -1,0 +1,102 @@
+一、读写文本格式数据
+pandas 提供了一些用于将表格型数据读取为 DataFrame 对象的函数
+其中最常用的为 read_csv 和 read_table 这两个函数
+书中提供了完整的函数列表，这些函数的选项可以划分为以下几个大类：
+（1）索引:将一个或多个列当做返回的 DataFrame 处理，以及是否从文件、 用户获取列名
+（2）类型推断和数据转换:包括用户定义值的转换、和自定义的缺失值标记
+（3）日期解析:包括组合功能，比如将分散在多个列中的日期时间信息组合成结果中的单个列
+（4）迭代:支持对大文件进行逐块迭代
+（5）不规整数据问题:跳过一些行、页脚、注释或其他一些不重要的东西(比如由成千上万个逗号隔开的数值数据)。
+
+1.读取以逗号分隔的文本文件
+!cat examples/ex1.csv #Unix的cat shell命令将文件的原始内容打印到屏幕上，windows可用type命令
+上述csv文件以逗号分隔，用pd.read_csv 读取：
+df = pd.read_csv('examples/ex1.csv')
+df
+也可用read_table 读取，并指定分隔符：
+pd.read_table('examples/ex1.csv', sep=',')
+
+ex1的文本有标题列，遇到没有标题列的时候用上述方法读取会报错
+- 指定header=None，让pandas分配默认列明
+pd.read_csv('examples/ex2.csv', header=None)
+- 指定列名
+pd.read_csv('examples/ex2.csv', names=['a', 'b', 'c', 'd','message'])
+- 将message 列作为dataframe的索引
+pd.read_csv('examples/ex2.csv', names=names,index_col='message')
+- 将多个列做成一个层次化索引
+parsed = pd.read_csv('examples/csv_mindex.csv',index_col=['key1', 'key2'])
+parsed
+- 分隔符不规整 \s+
+result = pd.read_table('examples/ex3.txt', sep='\s+')
+- 跳过某些行 skiprows
+ pd.read_csv('examples/ex4.csv', skiprows=[0, 2, 3])
+- 缺失值处理
+result = pd.read_csv('examples/ex5.csv') # 默认将空值标记为nan
+-- na_values 以列表或集合的字符串表示缺失值
+result = pd.read_csv('examples/ex5.csv', na_values=['NULL'])
+-- 用字典形式指定需要标记为na的值
+sentinels = {'message': ['foo', 'NA'], 'something': ['two']}
+pd.read_csv('examples/ex5.csv', na_values=sentinels)
+- 指定读取的行 nrows
+pd.read_csv('examples/ex6.csv', nrows=5)
+
+2.逐块读取文本文件，指定chunksize
+chunker = pd.read_csv('ch06/ex6.csv', chunksize=1000)
+tot = pd.Series([])
+for piece in chunker:
+    tot = tot.add(piece['key'].value_counts(), fill_value=0) # 将值计数聚合到"key"列
+tot = tot.sort_values(ascending=False)
+
+3.将数据写到文本格式
+利用DataFrame的to_csv方法，我们可以将数据写到一个以逗号分隔的文件
+data = pd.read_csv('examples/ex5.csv')
+data.to_csv('examples/out.csv')
+!cat examples/out.csv
+
+- 指定分隔符
+data.to_csv('examples/out.csv', sep='|')
+!cat examples/out.csv
+
+- 指定空字符的输出格式
+import sys # 直接写出到 sys.stdout，所以仅仅是 打印出文本结果
+data.to_csv(sys.stdout, na_rep='NULL')
+
+- 写出行/列的标签
+data.to_csv(sys.stdout, index=False, header=False) # 禁用标签
+data.to_csv(sys.stdout, index=False, columns=['a', 'b', 'c']) #写出一部分的列，并以指定的顺序排列
+
+- series的to_csv方法
+dates = pd.date_range('1/1/2000', periods=7)
+ts = pd.Series(np.arange(7), index=dates)
+ts.to_csv('examples/tseries.csv')
+!cat examples/tseries.csv
+
+4.二进制数据格式
+- 使用 Python 内置的 pickle 序列化
+frame = pd.read_csv('examples/ex1.csv')
+frame.to_pickle('examples/frame_pickle')
+pd.read_pickle('examples/frame_pickle')
+注意:pickle 仅建议用于短期存储格式
+
+5.使用HDF5格式
+HDF5 支持多种压缩器的即时压缩，还能更高效地存储重复模式数据，对于那些非常大的无法直接放入内存的数据集，HDF5 就是不错的选择，因为它可以高效地分块读写
+HDF5 文件中的对象可以通过与字典一样的 API 进行获取
+
+6.读取 Microsoft Excel 文件
+要使用 ExcelFile，通过传递 xls 或 xlsx 路径创建一个实例:
+xlsx = pd.ExcelFile('examples/ex1.xlsx')
+pd.read_excel(xlsx, 'Sheet1')
+ps：如果要读取一个文件中的多个表单，创建 ExcelFile 会更快，但你也可以将文 件名传递到 pd.read_excel
+frame = pd.read_excel('examples/ex1.xlsx', 'Sheet1')
+
+- 将pandas写入到 Excel 格式
+首先创建一个 ExcelWriter， 然后使用 pandas 对象的 to_excel 方法将数据写入到其中
+writer = pd.ExcelWriter('examples/ex2.xlsx')
+frame.to_excel(writer, 'Sheet1')
+writer.save()
+ps：也可以直接传递文件的路径到 to_excel
+frame.to_excel('examples/ex2.xlsx')
+
+7. 数据库交互
+import sqlite3
+con = sqlite3.connect('mydata.sqlite')

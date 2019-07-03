@@ -1,0 +1,103 @@
+一、处理缺失值
+* pandas 对象的所有描述性统计默认都不包括缺失数据
+1.isnull
+检测数据中的缺失值： string_data.isnull()
+* python内置的none在对象数组中也可以作为na
+
+2.处理缺失数据的一些方法
+dropna -- 根据标签中是否存在缺失值对轴标签做过滤，可通过阈值调节对缺失值的容忍度
+fillna -- 用指定值或插值方法（ffill或bfill）填充缺失数据
+isnull -- 检测哪些值是缺失的
+notnull -- isnull的否定形式
+
+2.1 dropna
+(1)对于一个 Series，dropna 返回一个仅 含非空数据和索引值的 Series
+from numpy import nan as NA
+data = pd.Series([1, NA, 3.5, NA, 7])
+data.dropna() # 等价于 data[data.notnull()]
+
+(2)对于 DataFrame 对象,dropna 默认丢弃任何含有缺失值的行
+data = pd.DataFrame([[1., 6.5, 3.], [1., NA, NA], [NA, NA, NA], [NA, 6.5, 3.]])
+data.dropna()
+--传入 how='all'将只丢弃全为 NA 的那些行
+data.dropna(how='all')
+--丢弃列，设置axis=1
+data.dropna(axis=1, how='all')
+--剔除指定行 thresh
+df = pd.DataFrame(np.random.randn(7, 3))
+df.iloc[:4, 1] = NA
+df.iloc[:2, 2] = NA
+df.dropna(thresh=2) # 剔除第二行之前的数
+
+2.2 fillna
+df.fillna(0)
+-- 通过字典调用 fillna，对不同的列填充不同的值
+df.fillna({1: 0.5, 2: 0})
+-- 默认返回新对象，也可以对现有对象进行就地修改
+ _ = df.fillna(0, inplace=True)
+-- 插值方法
+df.fillna(method='ffill')
+df.fillna(method='ffill', limit=2) # limit表示可以填充的最大数量
+
+二、数据转换
+1.移除重复数据 duplicated
+DataFrame 的 duplicated 方法返回一个布尔型 Series，表示各行是否是重复行
+-- drop_duplicates 移除重复数组
+data.drop_duplicates()
+-- 根据选中的列过滤重复项
+data.drop_duplicates(['k1'])
+-- 指定保留重复项的哪一组数据
+
+2.利用函数映射做数据转换
+使用 map 实现元素级的转换
+data = pd.DataFrame({'food': ['bacon', 'pulled pork','bacon', 'Pastrami', 'corned beef','Bacon','pastrami', 'honey ham', 'novalox'],
+                     'ounces': [4, 3, 12, 6, 7.5, 8, 3, 5,6]})
+# 假设想要添加一列表示该肉类食物来源的动物类型
+meat_to_animal = {
+  'bacon': 'pig',
+  'pulled pork': 'pig',
+  'pastrami': 'cow',
+  'corned beef': 'cow',
+  'honey ham': 'pig',
+  'nova lox': 'salmon'
+}
+lowercased = data['food'].str.lower()
+data['animal'] = lowercased.map(meat_to_animal)
+
+data['food'].map(lambda x: meat_to_animal[x.lower()]) # 法二报错
+
+3.替换数据
+replace 替换数据结构内的某些值
+data.replace(-999, np.nan)
+data.replace([-999, -1000], np.nan) #一对多
+data.replace([-999, -1000], [np.nan, 0]) # 多对多
+data.replace({-999: np.nan, -1000: 0}) # 传入的参数也可以是字典
+
+* data.replace 方法与 data.str.replace 不同，后者做的是字符串的元 素级替换
+
+4.重命名轴索引
+- map 方法
+transform = lambda x: x[:4].upper()
+data.index = data.index.map(transform)
+
+- rename 只创建数据集的转换版(而不是修改原始数据)
+data.rename(index=str.title, columns=str.upper)
+data.rename(index={'OHIO': 'INDIANA'},columns={'three': 'peekaboo'})
+* rename也可以对原数据作修改，传入inplace=True即可
+
+5.离散化和面元划分 cut
+将连续数据离散化，划分到各小组中
+ages = [20, 22, 25, 27, 21, 23, 37, 31, 61, 45, 41, 32]
+bins = [18, 25, 35, 60, 100]
+cats = pd.cut(ages, bins)
+
+cats.codes #ages 对应的组号
+cats.categories # 划分区间
+
+pd.value_counts(cats) # 给出区间段对应的计数
+
+
+ 
+
+
+

@@ -85,7 +85,7 @@ data.rename(index=str.title, columns=str.upper)
 data.rename(index={'OHIO': 'INDIANA'},columns={'three': 'peekaboo'})
 * rename也可以对原数据作修改，传入inplace=True即可
 
-5.离散化和面元划分 cut
+5.离散化和面元划分 cut,qcut
 将连续数据离散化，划分到各小组中
 ages = [20, 22, 25, 27, 21, 23, 37, 31, 61, 45, 41, 32]
 bins = [18, 25, 35, 60, 100]
@@ -95,9 +95,48 @@ cats.codes #ages 对应的组号
 cats.categories # 划分区间
 
 pd.value_counts(cats) # 给出区间段对应的计数
+* 哪边是闭端可以通过 right=False 进行修改;abels=group_names 设置自己的面元名称
+group_names = ['Youth', 'YoungAdult', 'MiddleAged','Senior']
+c2 = pd.cut(ages, bins, labels=group_names)
+pd.value_counts(c2)
 
-
+ -- 向 cut 传入面元的数量
+ data = np.random.rand(20) 
+ pd.cut(data, 4, precision=2) # precision=2，限定小数只有两位
  
+* qcut 根据样本分位数对数据进行面元划分
+data = np.random.randn(1000)  # Normally distributed
+cats = pd.qcut(data, 4)  # Cut into quartiles
+pd.value_counts(cats)
 
+传递自定义的分位数
+pd.qcut(data, [0, 0.1, 0.5, 0.9, 1.])
 
+6.检测和过滤异常值
+data = pd.DataFrame(np.random.randn(1000, 4))
+data.describe()
+data[(np.abs(data) > 3).any(1)] #用any取出所有绝对值大于3的点
+data[np.abs(data) > 3] = np.sign(data) * 3 #将值限制在区间-3 到 3 以内
+data.describe()
 
+7.排列和随机采样 permutation
+df = pd.DataFrame(np.arange(5 * 4).reshape((5, 4)))
+sampler = np.random.permutation(5)
+然后基于 iloc 的索引操作或 take 函数中使用该数组
+
+df.take(sampler)
+如果不想用替换的方式选取随机子集，可以在 Series 和 DataFrame 上使用 sample 方法
+df.sample(n=3)
+
+choices = pd.Series([5, 7, -1, 6, 4])
+draws = choices.sample(n=10, replace=True)
+
+8.计算指标/哑变量
+将分类变量(categorical variable)转换为“哑变量”或“指标矩阵”。
+
+df = pd.DataFrame({'key': ['b', 'b', 'a', 'c', 'a', 'b'],
+   .....:                    'data1': range(6)})
+pd.get_dummies(df['key'])
+给指标 DataFrame 的列加上一个前缀，以便能够跟其他数据进行合并
+dummies = pd.get_dummies(df['key'], prefix='key')
+df_with_dummy = df[['data1']].join(dummies)

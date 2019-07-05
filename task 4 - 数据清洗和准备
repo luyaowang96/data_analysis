@@ -140,3 +140,9 @@ pd.get_dummies(df['key'])
 给指标 DataFrame 的列加上一个前缀，以便能够跟其他数据进行合并
 dummies = pd.get_dummies(df['key'], prefix='key')
 df_with_dummy = df[['data1']].join(dummies)
+
+结合 get_dummies 和诸如 cut 之类的离散化函数:
+np.random.seed(12345)
+values = np.random.rand(10)
+bins = [0, 0.2, 0.4, 0.6, 0.8, 1]
+pd.get_dummies(pd.cut(values, bins))

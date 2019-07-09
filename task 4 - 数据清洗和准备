@@ -193,6 +193,9 @@ m = regex.search(text)
 text[m.start():m.end()]
 print(regex.match(text))
 
+10.pandas 的矢量化字符串函数
+(1)通过series的 str 属性访问这些方法
+data.str.contains('gmail')
  
  
  

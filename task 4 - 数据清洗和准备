@@ -146,3 +146,54 @@ np.random.seed(12345)
 values = np.random.rand(10)
 bins = [0, 0.2, 0.4, 0.6, 0.8, 1]
 pd.get_dummies(pd.cut(values, bins))
+
+9.字符串操作
+- 内置字符串方法：
+（1）以逗号分隔的字符串可以用 split 拆分成数段
+val = 'a,b,  guido'
+val.split(',')
+（2）split 常常与 strip 一起使用，以去除空白符(包括换行符)
+pieces = [x.strip() for x in val.split(',')]
+（3）利用加法，可以将这些子字符串以双冒号分隔符的形式连接起来
+ first, second, third = pieces
+ first + '::' + second + '::' + third
+（4）向字符串 "::"的 join 方法传入一个列表或元组
+'::'.join(pieces)
+-- 子串定位
+（1）检测子串的最佳方式是利用 Python 的 in 关键 字，还可以使用 index 和 find 
+ 'guido' in val
+ val.index(',')
+ val.find(':')
+⚠️ find 和 index 的区别:如果找不到字符串，index 将会引发一个异常(而不是返回-1)
+
+（2）count 可以返回指定子串的出现次数
+val.count(',')
+（3）replace 用于将指定模式替换为另一个模式//通过传入空字符串，它也常常用于删除模式:
+val.replace(',', '::')
+val.replace(',', '')
+
+-- 正则表达
+（1）拆分一个字符串，分隔符为数量不定的一组空白符(制表符、空格、换行符等) \s+
+import re
+text = "foo    bar\t baz  \tqux"
+re.split('\s+', text)
+
+（2）用 re.compile 自己编译 regex 以得到一个可重用的 regex 对象
+regex = re.compile('\s+')
+regex.split(text)
+
+（3）如果只希望得到匹配 regex 的所有模式，则可以使用 findall 方法
+regex.findall(text)
+
+⚠️ findall 返回的是字符串中所有的匹配项； search 则只返回第一个匹配项；match 更加严格，它只匹配字符串的首部
+
+（4）sub 方法可以将匹配到的模式替换为指定字符串，并返回所得到的新字符串
+对于上面那个 regex，匹配项对象只能告诉我们模式在原字符串中的起始和结束位置
+m = regex.search(text)
+text[m.start():m.end()]
+print(regex.match(text))
+
+ 
+ 
+ 
+ 
